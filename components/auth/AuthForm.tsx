@@ -66,12 +66,20 @@ export default function AuthForm({ mode }: AuthFormProps) {
         }
         
         if (!data.session) {
-          throw new Error('Aucune session créée')
+          console.error('❌ Aucune session créée')
+          throw new Error('Aucune session créée. Vérifiez que votre email est confirmé.')
         }
         
-        console.log('✅ Connexion réussie ! Redirection...')
-        router.push('/dashboard')
-        router.refresh()
+        if (!data.user) {
+          console.error('❌ Aucun utilisateur trouvé')
+          throw new Error('Aucun utilisateur trouvé')
+        }
+        
+        console.log('✅ Connexion réussie !', { user: data.user.email, session: !!data.session })
+        console.log('🔄 Redirection vers dashboard...')
+        
+        // Force la redirection avec window.location pour être sûr
+        window.location.href = '/dashboard'
       }
     } catch (err: any) {
       console.error('❌ Erreur auth:', err)
