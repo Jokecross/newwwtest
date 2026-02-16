@@ -24,7 +24,7 @@ yarn-error.log*
 
 # Variables d'environnement locales
 .env*.local
-.env
+# Note: .env est inclus dans le repo avec placeholders pour faciliter le setup
 
 # Vercel
 .vercel
