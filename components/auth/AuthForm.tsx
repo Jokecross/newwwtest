@@ -26,7 +26,22 @@ export default function AuthForm({ mode }: AuthFormProps) {
     setLoading(true)
     setError(null)
 
-    console.log('🔐 Démarrage auth...', { mode, email: formData.email })
+    // Vérification des variables d'environnement
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+    console.log('🔐 Démarrage auth...', { 
+      mode, 
+      email: formData.email,
+      supabaseUrl: supabaseUrl ? `${supabaseUrl.substring(0, 20)}...` : '❌ MANQUANT',
+      supabaseKey: supabaseKey ? `${supabaseKey.substring(0, 10)}...` : '❌ MANQUANT'
+    })
+
+    if (!supabaseUrl || !supabaseKey) {
+      setError('❌ Configuration Supabase manquante ! Vérifiez votre fichier .env')
+      setLoading(false)
+      return
+    }
 
     try {
       if (mode === 'signup') {
@@ -72,8 +87,21 @@ export default function AuthForm({ mode }: AuthFormProps) {
         window.location.href = '/dashboard'
       }
     } catch (err: any) {
-      console.error('❌ Erreur auth:', err)
-      setError(err.message || 'Une erreur est survenue')
+      console.error('❌ Erreur auth complète:', {
+        message: err.message,
+        name: err.name,
+        status: err.status,
+        details: err
+      })
+      
+      // Messages d'erreur plus clairs
+      let errorMessage = err.message || 'Une erreur est survenue'
+      
+      if (err.message === 'Failed to fetch' || err.name === 'TypeError') {
+        errorMessage = '❌ Impossible de contacter Supabase. Vérifiez que vos clés dans le fichier .env sont correctes et que votre projet Supabase est actif.'
+      }
+      
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }
