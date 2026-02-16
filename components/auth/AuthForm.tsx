@@ -26,70 +26,37 @@ export default function AuthForm({ mode }: AuthFormProps) {
     setLoading(true)
     setError(null)
 
-    console.log('🔐 Tentative de connexion...', { mode, email: formData.email })
+    console.log('🔐 Tentative via API...', { mode, email: formData.email })
 
     try {
-      if (mode === 'signup') {
-        const { data, error: signUpError } = await supabase.auth.signUp({
+      const endpoint = mode === 'signup' ? '/api/auth/signup' : '/api/auth/login'
+      
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
           email: formData.email,
           password: formData.password,
-          options: {
-            data: {
-              full_name: formData.fullName,
-            },
-          },
-        })
-        
-        console.log('📝 Résultat inscription:', { data, error: signUpError })
-        
-        if (signUpError) throw signUpError
-        
-        // Vérifier si l'email doit être confirmé
-        if (data?.user && !data.session) {
-          setError('Vérifiez votre email pour confirmer votre compte.')
-          return
-        }
-        
-        router.push('/dashboard')
-        router.refresh()
-      } else {
-        const { data, error: signInError } = await supabase.auth.signInWithPassword({
-          email: formData.email,
-          password: formData.password,
-        })
-        
-        console.log('🔑 Résultat connexion:', { data, error: signInError })
-        
-        if (signInError) {
-          console.error('❌ Erreur de connexion:', signInError)
-          throw signInError
-        }
-        
-        if (!data.session) {
-          console.error('❌ Aucune session créée')
-          throw new Error('Aucune session créée. Vérifiez que votre email est confirmé.')
-        }
-        
-        if (!data.user) {
-          console.error('❌ Aucun utilisateur trouvé')
-          throw new Error('Aucun utilisateur trouvé')
-        }
-        
-        console.log('✅ Connexion réussie !', { user: data.user.email, session: !!data.session })
-        console.log('🍪 Cookies:', document.cookie)
-        console.log('🔄 Redirection vers dashboard dans 500ms...')
-        
-        // Attendre 500ms pour être SÛR que les cookies sont propagés
-        await new Promise(resolve => setTimeout(resolve, 500))
-        
-        console.log('🍪 Cookies après délai:', document.cookie)
-        
-        // Force un rechargement COMPLET de la page
-        window.location.replace('/dashboard')
+          fullName: formData.fullName,
+        }),
+      })
+
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Erreur lors de l\'authentification')
       }
+
+      console.log('✅ Succès !', result)
+      console.log('🔄 Redirection...')
+      
+      // Redirection immédiate - les cookies sont gérés côté serveur
+      window.location.href = '/dashboard'
     } catch (err: any) {
-      console.error('❌ Erreur auth:', err)
-      setError(err.message || 'Une erreur est survenue lors de la connexion')
+      console.error('❌ Erreur:', err)
+      setError(err.message || 'Une erreur est survenue')
     } finally {
       setLoading(false)
     }
