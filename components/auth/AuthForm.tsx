@@ -66,7 +66,25 @@ export default function AuthForm({ mode }: AuthFormProps) {
           return
         }
 
-        console.log('✅ Inscription OK - Redirection...')
+        console.log('✅ Inscription OK - Vérification session...')
+        
+        // Vérifier que la session est accessible (max 5 tentatives)
+        let sessionReady = false
+        for (let i = 0; i < 5; i++) {
+          const { data: { session } } = await supabase.auth.getSession()
+          console.log(`🔍 Tentative ${i + 1}/5 - Session:`, session ? '✅ Prête' : '❌ Pas encore')
+          if (session) {
+            sessionReady = true
+            break
+          }
+          await new Promise(resolve => setTimeout(resolve, 300))
+        }
+
+        if (!sessionReady) {
+          console.warn('⚠️ Session pas encore propagée après 1.5s, redirection quand même...')
+        }
+
+        console.log('🔄 Redirection vers dashboard...')
         window.location.href = '/dashboard'
       } else {
         console.log('🔐 Connexion...')
@@ -83,7 +101,25 @@ export default function AuthForm({ mode }: AuthFormProps) {
           throw new Error('Aucune session créée. Vérifiez que la confirmation email est désactivée dans Supabase.')
         }
 
-        console.log('✅ Connexion OK - Redirection...')
+        console.log('✅ Connexion OK - Vérification session...')
+        
+        // Vérifier que la session est accessible (max 5 tentatives)
+        let sessionReady = false
+        for (let i = 0; i < 5; i++) {
+          const { data: { session } } = await supabase.auth.getSession()
+          console.log(`🔍 Tentative ${i + 1}/5 - Session:`, session ? '✅ Prête' : '❌ Pas encore')
+          if (session) {
+            sessionReady = true
+            break
+          }
+          await new Promise(resolve => setTimeout(resolve, 300))
+        }
+
+        if (!sessionReady) {
+          console.warn('⚠️ Session pas encore propagée après 1.5s, redirection quand même...')
+        }
+
+        console.log('🔄 Redirection vers dashboard...')
         window.location.href = '/dashboard'
       }
     } catch (err: any) {
