@@ -61,17 +61,14 @@ Ce guide est fait pour les **débutants**. Suivez chaque étape dans l'ordre.
 
 ## 💻 Étape 4 : Configurer le projet (1 min)
 
-### 4.1 Créer le fichier .env.local
+### 4.1 Ouvrir le fichier .env
 
-```bash
-# Dans le terminal, à la racine du projet :
-cp .env.example .env.local
-```
+Le fichier **`.env`** existe déjà à la racine du projet.
 
-### 4.2 Modifier .env.local
+### 4.2 Modifier .env
 
-1. Ouvrez le fichier **`.env.local`**
-2. Remplacez les valeurs :
+1. Ouvrez le fichier **`.env`**
+2. Remplacez les valeurs par VOS clés Supabase :
 
 ```env
 NEXT_PUBLIC_SUPABASE_URL=https://VOTRE-PROJET.supabase.co

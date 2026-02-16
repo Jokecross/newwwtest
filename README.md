@@ -135,13 +135,9 @@ create trigger on_auth_user_created
 
 ### Étape 4 : Configurer les variables d'environnement
 
-1. **Copiez le fichier `.env.example`** en `.env.local` :
+1. **Ouvrez le fichier `.env`** (déjà présent à la racine)
 
-```bash
-cp .env.example .env.local
-```
-
-2. **Ouvrez `.env.local`** et remplacez les valeurs par vos vraies clés Supabase :
+2. **Remplacez les valeurs** par vos vraies clés Supabase :
 
 ```env
 NEXT_PUBLIC_SUPABASE_URL=https://votre-projet.supabase.co
