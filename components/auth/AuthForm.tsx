@@ -26,36 +26,53 @@ export default function AuthForm({ mode }: AuthFormProps) {
     setLoading(true)
     setError(null)
 
-    console.log('🔐 Tentative via API...', { mode, email: formData.email })
+    console.log('🔐 Démarrage auth...', { mode, email: formData.email })
 
     try {
-      const endpoint = mode === 'signup' ? '/api/auth/signup' : '/api/auth/login'
-      
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      if (mode === 'signup') {
+        console.log('📝 Inscription...')
+        const { data, error: signUpError } = await supabase.auth.signUp({
           email: formData.email,
           password: formData.password,
-          fullName: formData.fullName,
-        }),
-      })
+          options: {
+            emailRedirectTo: `${window.location.origin}/auth/callback`,
+            data: {
+              full_name: formData.fullName,
+            },
+          },
+        })
 
-      const result = await response.json()
+        console.log('📝 Résultat:', { user: data?.user?.email, session: !!data?.session, error: signUpError?.message })
 
-      if (!response.ok) {
-        throw new Error(result.error || 'Erreur lors de l\'authentification')
+        if (signUpError) throw signUpError
+
+        if (data?.user && !data.session) {
+          setError('Vérifiez votre email pour confirmer votre compte.')
+          return
+        }
+
+        console.log('✅ Inscription OK - Redirection...')
+        window.location.href = '/dashboard'
+      } else {
+        console.log('🔐 Connexion...')
+        const { data, error: signInError } = await supabase.auth.signInWithPassword({
+          email: formData.email,
+          password: formData.password,
+        })
+
+        console.log('🔐 Résultat:', { user: data?.user?.email, session: !!data?.session, error: signInError?.message })
+
+        if (signInError) throw signInError
+
+        if (!data.session) {
+          throw new Error('Aucune session créée. Vérifiez que la confirmation email est désactivée dans Supabase.')
+        }
+
+        console.log('✅ Connexion OK - Redirection...')
+        window.location.href = '/dashboard'
       }
-
-      console.log('✅ Succès !', result)
-      console.log('🔄 Redirection...')
-      
-      // Redirection immédiate - les cookies sont gérés côté serveur
-      window.location.href = '/dashboard'
     } catch (err: any) {
-      console.error('❌ Erreur:', err)
+      console.error('❌ Erreur auth:', err)
       setError(err.message || 'Une erreur est survenue')
     } finally {
       setLoading(false)
